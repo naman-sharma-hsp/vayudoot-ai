@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AetherX - VAYUDOOT AI | Mission Control</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .glow { text-shadow: 0 0 20px rgb(0 255 200); }
+    canvas { display: block; }
+    .tab-active { border-bottom: 3px solid #00ffc8; color: #00ffc8; }
+    .modal { animation: modalPop 0.3s ease; }
+    @keyframes modalPop { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+    #chat-window {
+      scroll-behavior: smooth;
+    }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.2rem;
+        line-height: 1.3;
+      }
+      
+      h2 {
+        font-size: 1.1rem;
+        line-height: 1.3;
+      }
+
+      h3 {
+        font-size: 1rem;
+        line-height: 1.3;
+      }
+
+      .glow {
+        text-shadow: 0 0 10px cyan;
+      }
+
+      p, span, div {
+        font-size: 0.875rem;
+        line-height: 1.4;
+      }
+
+      .text-xs {
+        font-size: 0.75rem;
+      }
+
+      .text-sm {
+        font-size: 0.875rem;
+      }
+
+      .text-lg {
+        font-size: 1.125rem;
+      }
+
+      .text-xl {
+        font-size: 1.25rem;
+      }
+
+      .text-2xl {
+        font-size: 1.5rem;
+      }
+
+      .text-3xl {
+        font-size: 1.875rem;
+      }
+    }
+
+    @media (max-width: 1440px) {
+      h1 {
+        font-size: 1.5rem;
+        line-height: 1.3;
+      }
+      
+      h2 {
+        font-size: 1.3rem;
+        line-height: 1.3;
+      }
+
+      h3 {
+        font-size: 1.1rem;
+        line-height: 1.3;
+      }
+
+      .glow {
+        text-shadow: 0 0 15px cyan;
+      }
+
+      p, span, div {
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .text-xs {
+        font-size: 0.8rem;
+      }
+
+      .text-sm {
+        font-size: 0.9rem;
+      }
+
+      .text-lg {
+        font-size: 1.2rem;
+      }
+
+      .text-xl {
+        font-size: 1.35rem;
+      }
+
+      .text-2xl {
+        font-size: 1.7rem;
+      }
+
+      .text-3xl {
+        font-size: 0.875rem;
+      }
+
+      /* Specific fixes for mission control sections */
+      .glow {
+        font-size: 1.2rem !important;
+      }
+
+      .absolute.top-4 h3 {
+        font-size: 0.9rem !important;
+      }
+
+      .absolute.top-4 .text-xs {
+        font-size: 0.7rem !important;
+      }
+
+      .absolute.top-4 .text-sm {
+        font-size: 0.8rem !important;
+      }
+
+      .absolute.top-4 span {
+        font-size: 0.7rem !important;
+      }
+
+      #failure-value {
+        font-size: 1.5rem !important;
+      }
+    }
+    @media (max-width: 1025px) {
+      #failure-value {
+        font-size: 1.2rem !important;
+      }
+    }
+    /* Optional: Neon Scrollbar */
+    #chat-window::-webkit-scrollbar { width: 4px; }
+    #chat-window::-webkit-scrollbar-track { background: transparent; }
+    #chat-window::-webkit-scrollbar-thumb { background: #00ffc8; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-[#05050f] text-cyan-300 h-screen overflow-hidden flex flex-col">
+  <!-- HEADER -->
+  <button onclick="toggleMenu()" class="lg:hidden text-cyan-400 text-xl mr-3">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div id="mobile-menu" class="hidden fixed top-14 left-0 w-full bg-black border-b border-cyan-500 z-50">
+    <button onclick="switchMobileTab(0)" class="block w-full text-left px-6 py-4 border-b border-cyan-800">🚀 Monitoring</button>
+    <button onclick="switchMobileTab(1)" class="block w-full text-left px-6 py-4 border-b border-cyan-800">👨‍🚀 Crew</button>
+    <button onclick="switchMobileTab(2)" class="block w-full text-left px-6 py-4">🤖 VAYUDOOT</button>
+  </div>
+  <div class="h-14 bg-black/90 border-b border-cyan-500 flex items-center px-6 z-50">
+    <div class="flex items-center gap-3">
+      <!-- Real AetherX Logo -->
+      <img src="image.png" 
+           class="w-9 h-9 rounded-2xl" alt="AetherX Logo">
+      <h1 class="text-lg sm:text-xl lg:text-3xl font-bold glow tracking-widest">AetherX - VAYUDOOT AI</h1>
+    </div>
+    <div class="ml-auto hidden sm:flex items-center gap-4 text-xs lg:text-sm font-medium">
+      <div>MISSION ELAPSED: <span id="mission-time" class="font-mono text-green-400">00:00:00</span></div>
+      <div>DISTANCE TO MARS: <span id="distance" class="font-mono text-amber-400">187,420,000 km</span></div>
+      <div>ROCKET SPEED: <span id="speed" class="font-mono text-white">7.8 km/s</span></div>
+      <button onclick="openSimulationPanel()" class="bg-cyan-500 hover:bg-cyan-400 text-black px-5 py-1.5 rounded-3xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+        <i class="fas fa-sliders-h"></i> SIMULATION CONTROLS
+      </button>
+    </div>
+  </div>
+
+  <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+    <!-- LEFT 60% - 3D SIMULATION (Now Realistic) -->
+    <div class="w-full lg:w-3/5 h-[250px] sm:h-[350px] lg:h-auto relative" id="three-container">
+      <canvas id="canvas"></canvas>
+      
+      <div class="absolute top-4 left-4 right-4 sm:right-auto sm:max-w-xs 
+          bg-black/70 backdrop-blur-md border border-cyan-400/50 
+          rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-xs sm:text-sm">
+        <h3 class="text-sm sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2"><i class="fas fa-rocket"></i> Gaganyaan-3 to Mars</h3>
+        <div class="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+          <div class="flex justify-between"><span>LAUNCHED FROM</span><span class="text-green-400">Earth • Sriharikota</span></div>
+          <div class="flex justify-between"><span>CURRENT PHASE</span><span class="text-amber-400">Low Earth Orbit → Trans-Mars Injection</span></div>
+          <div class="flex justify-between"><span>VAYUDOOT STATUS</span><span class="text-green-400">FULL AUTONOMY • 99.8%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT 40% - CONTROL CENTER -->
+    <div class="w-full lg:w-2/5 bg-black/90 border-t lg:border-t-0 lg:border-l border-cyan-500 flex flex-col overflow-hidden">
+      <!-- Tab Buttons -->
+      <div class="hidden lg:flex border-b border-cyan-500">
+        <button onclick="switchTab(0)" id="tab-0" class="tab-active flex-1 py-4 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2">
+          <i class="fas fa-satellite-dish"></i> MAIN MONITORING
+        </button>
+        <button onclick="switchTab(1)" id="tab-1" class="flex-1 py-4 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2">
+          <i class="fas fa-users"></i> CREW DATA
+        </button>
+        <button onclick="switchTab(2)" id="tab-2" class="flex-1 py-4 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2">
+          <i class="fas fa-comment-dots"></i> TALK TO VAYUDOOT
+        </button>
+      </div>
+
+      <!-- TAB 0: MAIN MONITORING -->
+      <div id="screen-0" class="flex-1 p-6 overflow-y-auto">
+        <h2 class="text-2xl font-bold mb-6">SYSTEM MONITORING</h2>
+        <div class="space-y-6">
+          <div>
+            <div class="flex justify-between text-xs mb-2"><span>TEMPERATURE (CORE)</span><span id="temp-value" class="font-mono">23.4°C</span></div>
+            <div class="h-2 bg-gray-800 rounded-full overflow-hidden"><div id="temp-bar" class="h-full bg-gradient-to-r from-cyan-400 to-blue-500 w-3/4"></div></div>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-4">
+            <div class="bg-black/60 border border-green-400 p-4 rounded-2xl text-center">
+              <i class="fas fa-gas-pump text-3xl mb-2"></i>
+              <div class="text-xs">O₂ LEVEL</div>
+              <div id="oxygen-value" class="text-3xl font-bold text-green-400">98.7%</div>
+            </div>
+            <div class="bg-black/60 border border-orange-400 p-4 rounded-2xl text-center">
+              <i class="fas fa-fire text-3xl mb-2"></i>
+              <div class="text-xs">FIRE RISK</div>
+              <div id="fire-value" class="text-3xl font-bold text-orange-400">0.2%</div>
+            </div>
+            <div class="bg-black/60 border border-red-400 p-4 rounded-2xl text-center">
+              <i class="fas fa-exclamation-triangle text-3xl mb-2"></i>
+              <div class="text-xs">SYSTEM FAILURE</div>
+              <div id="failure-value" class="text-3xl font-bold text-red-400">NOMINAL</div>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <h3 class="text-cyan-400 text-xs sm:text-sm mb-3">LAST RECORDS • <span id="last-updated-main" class="font-mono"></span></h3>
+            <div id="last-checks" class="space-y-4"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: CREW DATA -->
+      <div id="screen-1" class="flex-1 p-6 overflow-y-auto hidden">
+        <h2 class="text-2xl font-bold mb-2">CREW MEMBER DATA</h2>
+        <p class="text-xs text-gray-400 mb-6">Last updated: <span id="last-updated-crew" class="font-mono"></span></p>
+        <div id="crew-list" class="space-y-4"></div>
+        
+        <div id="crew-detail" class="mt-8 hidden bg-black/60 border border-cyan-400 rounded-3xl p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 id="detail-name" class="text-xl font-bold"></h3>
+            <button onclick="hideCrewDetail()" class="text-xs text-cyan-400">CLOSE</button>
+          </div>
+          <img id="detail-photo" src="" class="w-28 h-28 rounded-2xl object-cover mb-4 mx-auto">
+          <div id="detail-info" class="text-xs sm:text-sm space-y-3"></div>
+          <div onclick="updateCrewData()" class="mt-6 cursor-pointer bg-gradient-to-r from-cyan-500 to-blue-500 text-black font-bold py-3 rounded-2xl text-center">UPDATE CREW DATA NOW</div>
+        </div>
+      </div>
+
+      <!-- TAB 2: TALK SCREEN -->
+      <div id="screen-2" class="flex-1 flex flex-col hidden h-full overflow-hidden">
+        <div class="p-6 border-b border-cyan-500 flex-shrink-0">
+          <h2 class="text-2xl font-bold uppercase tracking-tighter">VAYUDOOT COGNITIVE INTERFACE</h2>
+          <p class="text-xs text-cyan-400">Direct Neural Link • Active</p>
+        </div>
+        
+        <div id="chat-window" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4"></div>
+        
+        <div class="p-4 border-t border-cyan-500 flex-shrink-0 bg-black/50">
+          <div class="flex gap-2">
+            <input id="chat-input" type="text" placeholder="Transmit command..." 
+                  class="flex-1 bg-black/60 border border-cyan-400 rounded-2xl px-4 py-3 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-cyan-400">
+            <button onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-400 text-black w-12 h-12 rounded-3xl flex items-center justify-center transition-transform active:scale-95">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULATION CONTROL PANEL MODAL (unchanged) -->
+  <div id="sim-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[9999]">
+    <div class="modal bg-[#0a0a1f] border border-cyan-400 rounded-3xl w-[580px] max-h-[92vh] overflow-hidden shadow-2xl">
+      <div class="p-6 border-b border-cyan-400 flex items-center justify-between">
+        <h2 class="text-lg sm:text-xl lg:text-2xl font-bold">Simulation Control Panel</h2>
+        <button onclick="closeSimulationPanel()" class="text-3xl text-cyan-400 leading-none">×</button>
+      </div>
+      
+      <div class="p-8 space-y-10 overflow-y-auto max-h-[75vh]">
+        <!-- Temperature Slider -->
+        <div>
+          <h3 class="text-cyan-400 mb-4">Core Temperature Control</h3>
+          <input type="range" id="temp-slider" min="10" max="40" value="23" step="0.1" 
+                 class="w-full accent-cyan-400" oninput="liveTempUpdate()">
+          <div class="flex justify-between text-xs sm:text-sm mt-1">
+            <span>10°C</span>
+            <span id="live-temp-display" class="font-mono text-lg">23.0°C</span>
+            <span>40°C</span>
+          </div>
+        </div>
+
+        <!-- System Status -->
+        <div>
+          <h3 class="text-cyan-400 mb-4">System Health Controls</h3>
+          <div class="space-y-6">
+            <div class="flex justify-between items-center">
+              <span>Thruster Valves</span>
+              <select id="sys-thruster" onchange="setSystemStatus(0, this.value)" class="bg-black border border-cyan-400 rounded-2xl px-4 py-2 text-xs sm:text-sm">
+                <option value="OK">OK</option>
+                <option value="Little">Little Damage</option>
+                <option value="Extreme">Extreme Damage</option>
+              </select>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Life Support Software</span>
+              <select id="sys-life" onchange="setSystemStatus(1, this.value)" class="bg-black border border-cyan-400 rounded-2xl px-4 py-2 text-xs sm:text-sm">
+                <option value="OK">OK</option>
+                <option value="Little">Little Damage</option>
+                <option value="Extreme">Extreme Damage</option>
+              </select>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Power Supply Unit</span>
+              <select id="sys-power" onchange="setSystemStatus(2, this.value)" class="bg-black border border-cyan-400 rounded-2xl px-4 py-2 text-xs sm:text-sm">
+                <option value="OK">OK</option>
+                <option value="Little">Little Damage</option>
+                <option value="Extreme">Extreme Damage</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Crew Status -->
+        <div>
+          <h3 class="text-cyan-400 mb-4 uppercase text-xs tracking-widest">Crew Health Override</h3>
+          <div class="space-y-4 bg-black/40 p-4 rounded-2xl border border-white/5">
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] text-gray-500">SELECT MEMBER</label>
+              <select id="sc-crew-select" class="bg-black border border-cyan-400/50 rounded-xl px-3 py-2 text-xs sm:text-sm text-cyan-50 focus:outline-none">
+                <option value="0">Capt. Vikram Singh</option>
+                <option value="1">Dr. Meera Patel</option>
+                <option value="2">Lt. Rohan Desai</option>
+                <option value="3">Dr. Anika Rao</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] text-gray-500">SET STATUS</label>
+              <select id="sc-crew-status" class="bg-black border border-cyan-400/50 rounded-xl px-3 py-2 text-xs sm:text-sm text-cyan-50 focus:outline-none">
+                <option value="Nominal">Nominal</option>
+                <option value="Stressed">Stressed</option>
+                <option value="Injured">Injured</option>
+                <option value="Critical">Critical</option>
+                <option value="Unconscious">Unconscious</option>
+              </select>
+            </div>
+
+            <button onclick="applyManualCrewUpdate()" class="w-full bg-cyan-900/40 border border-cyan-400 text-cyan-400 py-2 rounded-xl text-xs font-bold hover:bg-cyan-400 hover:text-black transition-all">
+              UPDATE VITALS
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== THREE.JS - REALISTIC EARTH & ROCKET ====================
+    let scene, camera, renderer, earth, mars, rocket;
+    let rocketAngle = 0;
+    let distanceToMars = 187420000;
+    let rocketSpeed = 7.8;
+
+    function initThree() {
+      const container = document.getElementById('three-container');
+      const canvas = document.getElementById('canvas');
+      
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+
+      const ambient = new THREE.AmbientLight(0xaaaaaa, 0.8);
+      scene.add(ambient);
+      const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+      sun.position.set(100, 50, 100);
+      scene.add(sun);
+
+      // === REALISTIC EARTH ===
+      const earthGeo = new THREE.SphereGeometry(4.2, 64, 64);
+      const earthMat = new THREE.MeshPhongMaterial({
+        map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg'),
+        shininess: 5,
+        specular: new THREE.Color(0x222222)
+      });
+      earth = new THREE.Mesh(earthGeo, earthMat);
+      scene.add(earth);
+
+      // Clouds for realism
+      const cloudGeo = new THREE.SphereGeometry(4.3, 64, 64);
+      const cloudMat = new THREE.MeshPhongMaterial({
+        map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png'),
+        transparent: true,
+        opacity: 0.4,
+        depthWrite: false
+      });
+      const clouds = new THREE.Mesh(cloudGeo, cloudMat);
+      earth.add(clouds);
+
+      // === MARS ===
+      const marsGeo = new THREE.SphereGeometry(2.2, 48, 48);
+      const marsMat = new THREE.MeshPhongMaterial({ 
+        map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/mars_1k_color.jpg')
+      });
+      mars = new THREE.Mesh(marsGeo, marsMat);
+      mars.position.set(28, 10, -15);
+      scene.add(mars);
+      
+      if (window.innerWidth < 768) {
+        renderer.setPixelRatio(1); // reduce load
+      }
+
+      // === REALISTIC ROCKET ===
+      const rocketGroup = new THREE.Group();
+      // Body
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.35, 0.35, 3.2, 32),
+        new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 30 })
+      );
+      body.rotation.x = Math.PI / 2;
+      rocketGroup.add(body);
+      // Nose cone
+      const nose = new THREE.Mesh(
+        new THREE.ConeGeometry(0.35, 1.4, 32),
+        new THREE.MeshPhongMaterial({ color: 0xff4500, shininess: 30 })
+      );
+      nose.position.set(0, 0, 2.3);
+      nose.rotation.x = Math.PI / 2;
+      rocketGroup.add(nose);
+      // Fins
+      for(let i = 0; i < 4; i++) {
+        const fin = new THREE.Mesh(
+          new THREE.BoxGeometry(0.8, 0.1, 0.6),
+          new THREE.MeshPhongMaterial({ color: 0x222222 })
+        );
+        fin.position.set(0, 0, -1.2);
+        fin.rotation.z = i * Math.PI / 2;
+        rocketGroup.add(fin);
+      }
+      rocket = rocketGroup;
+      rocket.position.set(-14, -4, 0);
+      scene.add(rocket);
+
+      camera.position.set(0, 12, 30);
+      camera.lookAt(0, 0, 0);
+
+      // Stars
+      const starsGeo = new THREE.BufferGeometry();
+      const verts = [];
+      for(let i = 0; i < 8000; i++) {
+        verts.push((Math.random()-0.5)*400, (Math.random()-0.5)*400, (Math.random()-0.5)*400);
+      }
+      starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
+      scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({color:0xffffff, size:0.08})));
+
+      animateThree();
+    }
+
+    function animateThree() {
+      requestAnimationFrame(animateThree);
+      earth.rotation.y += 0.0004;
+      rocketAngle += 0.0035;
+      rocket.position.x = -14 + Math.cos(rocketAngle) * 9;
+      rocket.position.z = Math.sin(rocketAngle) * 9;
+      rocket.rotation.y = Math.atan2(rocket.position.z, rocket.position.x) + Math.PI;
+
+      if(distanceToMars > 100000) distanceToMars -= rocketSpeed * 650;
+      document.getElementById('distance').textContent = Math.round(distanceToMars).toLocaleString() + " km";
+      document.getElementById('speed').textContent = rocketSpeed.toFixed(1) + " km/s";
+
+      renderer.render(scene, camera);
+    }
+
+    // ==================== DATE & MONITORING ====================
+    function getDynamicDates() {
+      const now = new Date();
+      const today = now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+      const yesterday = new Date(now); yesterday.setDate(yesterday.getDate()-1);
+      const twoDays = new Date(now); twoDays.setDate(twoDays.getDate()-2);
+      return {main:today, crew:yesterday.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}), checks:twoDays.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})};
+    }
+
+    let temp = 23.4;
+    function updateMainMonitoring() {
+      // 1. Drift back to 22.5°C if everything is OK
+      if (!systemStatus.includes("Extreme")) {
+        temp += (22.5 - temp) * 0.05; 
+      }
+      // If temperature exceeds 32°C, stress the crew regardless of system status
+      if (temp > 32) {
+        crewMembers.forEach(m => {
+          m.status = "HEAT STRESS";
+          m.hr += 1; // Creeping heart rate
+        });
+        renderCrewList();
+      }
+
+      // 2. Standard Jitter
+      temp += (Math.random() * 0.2 - 0.1);
+      
+      // 3. Update Main Panel
+      document.getElementById('temp-value').textContent = temp.toFixed(1) + '°C';
+      document.getElementById('temp-bar').style.width = (temp * 2.8) + '%';
+
+      // 4. Update SC Slider LIVE (only if the modal is actually visible)
+      const modal = document.getElementById('sim-modal');
+      if (!modal.classList.contains('hidden')) {
+        document.getElementById('temp-slider').value = temp;
+        document.getElementById('live-temp-display').textContent = temp.toFixed(1) + '°C';
+      }
+
+      // 1. ENVIRONMENTAL CHECK
+      const isTempSafe = temp <= 32;
+      const noSystemFailures = !systemStatus.includes("Extreme") && !systemStatus.includes("Little");
+
+      if (temp > 32) {
+        // TRIGGER HEAT STRESS
+        crewMembers.forEach(m => {
+          m.status = "HEAT STRESS";
+          m.hr = Math.min(110, m.hr + 0.5); // HR slowly climbs in heat
+          m.notes = "Environmental Warning: Cabin temperature exceeding safety limits.";
+        });
+        renderCrewList();
+      } 
+      else if (isTempSafe && noSystemFailures) {
+        // RECOVERY: Only reset if temp is safe AND systems are OK
+        // We check the first member's status to avoid unecessary re-renders
+        if (crewMembers[0].status === "HEAT STRESS") {
+          crewMembers.forEach(m => {
+            m.status = "Nominal";
+            m.hr = Math.max(70, m.hr - 1); // HR slowly recovers
+            m.notes = "Temperature stabilized. Vitals returning to baseline.";
+          });
+          addChatMessage("🌡️ Temperature stabilized. Crew heat stress alert cleared.");
+          renderCrewList();
+        }
+      }
+          
+      temp = Math.max(18, Math.min(32, temp + (Math.random()*0.6 - 0.3)));
+      document.getElementById('temp-value').textContent = temp.toFixed(1) + '°C';
+      document.getElementById('temp-bar').style.width = (temp * 2.8) + '%';
+      document.getElementById('oxygen-value').textContent = (96 + Math.random()*4).toFixed(1) + '%';
+      const dates = getDynamicDates();
+      document.getElementById('last-updated-main').textContent = dates.checks;
+      document.getElementById('last-checks').innerHTML = `
+        <div class="flex justify-between bg-black/40 p-4 rounded-2xl"><span>Thruster Valves</span><span id="record-thruster" class="text-green-400">OK</span></div>
+        <div class="flex justify-between bg-black/40 p-4 rounded-2xl"><span>Life Support Software</span><span id="record-life" class="text-green-400">OK</span></div>
+        <div class="flex justify-between bg-black/40 p-4 rounded-2xl"><span>Power Supply Unit</span><span id="record-power" class="text-green-400">OK</span></div>
+      `;
+      const failureDisplay = document.getElementById('failure-value');
+      
+      if (systemStatus.includes("Extreme")) {
+        failureDisplay.textContent = "CRITICAL";
+        failureDisplay.className = "text-3xl font-bold text-red-500 animate-pulse";
+      } else if (systemStatus.includes("Little")) {
+        failureDisplay.textContent = "UNSTABLE";
+        failureDisplay.className = "text-3xl font-bold text-orange-400";
+      } else {
+        failureDisplay.textContent = "NOMINAL";
+        failureDisplay.className = "text-3xl font-bold text-green-400";
+      }
+    }
+
+    // ==================== SIMULATION PANEL FUNCTIONS ====================
+    
+    // Add this function inside your <script> tag
+    function applyAllChanges() {
+      const currentTemp = parseFloat(document.getElementById('temp-slider').value);
+      
+      // 1. Sync Temperature
+      if (Math.abs(currentTemp - lastTemp) > 0.5) {
+        applyTemperatureChange(currentTemp);
+        lastTemp = currentTemp;
+      }
+
+      // 2. Sync System Statuses
+      systemStatus[0] = document.getElementById('sys-thruster').value;
+      systemStatus[1] = document.getElementById('sys-life').value;
+      systemStatus[2] = document.getElementById('sys-power').value;
+      
+      // 3. Update the UI logs immediately
+      updateLastRecords();
+      
+      // 4. Update Mission Health visual in the modal
+      const healthBar = document.getElementById('mission-health-bar');
+      const healthText = document.getElementById('mission-health-text');
+      healthBar.style.width = missionHealth + '%';
+      healthText.textContent = missionHealth + '%';
+      
+      // 5. Provide console feedback and close
+      console.log("Mission Profile Updated. Health:", missionHealth + "%");
+      closeSimulationPanel();
+    }
+    function applyTemperatureChange(val) {
+      // Show the balancing overlay
+      const overlay = document.createElement('div');
+      overlay.className = "fixed inset-0 bg-black/80 backdrop-blur-xl z-[10005] flex items-center justify-center flex-col text-cyan-400";
+      overlay.innerHTML = `<div class="text-2xl font-bold mb-4 animate-bounce">ADJUSTING THERMAL GRID</div><div class="w-64 h-1 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-cyan-400 animate-[progress_2s_ease-in-out]"></div></div>`;
+      document.body.appendChild(overlay);
+
+      setTimeout(() => {
+        temp = parseFloat(val); // Update the global variable
+        overlay.remove();
+        addChatMessage(`🌡️ Thermal core stabilized at ${temp.toFixed(1)}°C.`);
+      }, 2000);
+    }
+
+    function syncCrewWithSystems() {
+      const isExtreme = systemStatus.includes("Extreme");
+      const isLittle = systemStatus.includes("Little");
+      const isHeatStress = temp > 32;
+
+      // ONLY auto-update crew if there is an actual problem
+      // Otherwise, leave manual changes alone
+      if (isExtreme || isLittle || isHeatStress) {
+        crewMembers.forEach(member => {
+          if (isExtreme) {
+            member.status = "CRITICAL";
+            member.hr = 120;
+          } else if (isHeatStress) {
+            member.status = "HEAT STRESS";
+          } else if (isLittle) {
+            member.status = "STRESSED";
+          }
+        });
+        renderCrewList();
+      }
+    }
+
+    let systemStatus = ["OK", "OK", "OK"];   // 0=Thruster, 1=Life Support, 2=Power
+    let lastTemp = 23.4;                     // Current real temperature
+
+    function closeSimulationPanel() {
+      const currentVal = parseFloat(document.getElementById('temp-slider').value);
+      
+      // Only apply temperature change if it was actually modified
+      if (Math.abs(currentVal - lastTemp) > 0.3) {
+        applyTemperatureChange(currentVal);
+        lastTemp = currentVal;
+      }
+      
+      document.getElementById('sim-modal').classList.add('hidden');
+    }
+    function openSimulationPanel() {
+      // 1. Sync all systems
+      document.getElementById('sys-thruster').value = systemStatus[0];
+      document.getElementById('sys-life').value = systemStatus[1];
+      document.getElementById('sys-power').value = systemStatus[2];
+      
+      // 2. FORCE the slider to match the CURRENT "Panel" temperature
+      // This prevents it from staying at the "last slid" position
+      const scSlider = document.getElementById('temp-slider');
+      const scDisplay = document.getElementById('live-temp-display');
+      
+      scSlider.value = temp; 
+      scDisplay.textContent = temp.toFixed(1) + '°C';
+
+      document.getElementById('sim-modal').classList.remove('hidden');
+    }
+    function liveTempUpdate() {
+      const val = parseFloat(document.getElementById('temp-slider').value);
+      document.getElementById('live-temp-display').textContent = val.toFixed(1) + '°C';
+    }
+
+    function updateTempLive() {
+      // Do nothing on slider move - we will apply only when closing modal
+      const val = parseFloat(document.getElementById('temp-slider').value);
+      document.getElementById('live-temp-display').textContent = val.toFixed(1) + '°C';
+    }
+
+    let activeProtocol = null;
+    let protocolStep = 0;
+
+    const EMERGENCY_PROTOCOLS = {
+      "FIRE": {
+        name: "Protocol 7: Oxygen Venting",
+        steps: ["disable life support", "seal section 4", "re-pressurize"],
+        trigger: "Extreme Fire Risk detected"
+      },
+      "POWER": {
+        name: "Protocol 12: Grid Realignment",
+        steps: ["divert thruster power", "reboot core", "restore main grid"],
+        trigger: "Total Power Failure"
+      }
+    };
+
+    function applyManualCrewUpdate() {
+      const memberIndex = document.getElementById('sc-crew-select').value;
+      const newStatus = document.getElementById('sc-crew-status').value;
+      
+      const member = crewMembers[memberIndex];
+      member.status = newStatus;
+
+      // Set realistic Heart Rates based on the manual status
+      if (newStatus === "Nominal") {
+        member.hr = 72;
+        member.notes = "Vitals manual override: Stable.";
+      } else if (newStatus === "Stressed") {
+        member.hr = 98;
+        member.notes = "Psychological stress reported by Mission Control.";
+      } else if (newStatus === "Critical" || newStatus === "Injured") {
+        member.hr = 125;
+        member.notes = "IMMEDIATE MEDICAL INTERVENTION REQUIRED.";
+      } else if (newStatus === "Unconscious") {
+        member.hr = 45;
+        member.notes = "Non-responsive. VAYUDOOT monitoring life support.";
+      }
+      // Add this inside the functions where status changes
+      if (newStatus !== "Nominal") {
+        const suggestion = MEDICAL_PROTOCOLS[newStatus].text;
+        setTimeout(() => {
+          addChatMessage(`⚠️ ALERT: ${member.name} is ${newStatus}. ${suggestion}`);
+        }, 1000);
+      }
+
+      // 1. Refresh the Right Panel List
+      renderCrewList();
+
+      // 2. If the Detail View is open for this specific person, update it too
+      if (currentCrew && currentCrew.name === member.name) {
+        showCrewDetail(member);
+      }
+
+      // 3. Visual Feedback
+      showAlert(`🧑‍🚀 ${member.name} status updated to ${newStatus}`);
+      addChatMessage(`📡 Bio-telemetry update: ${member.name} is now ${newStatus}.`);
+    }
+
+    function triggerEmergency(type) {
+      activeProtocol = EMERGENCY_PROTOCOLS[type] || { 
+        name: "General Emergency", 
+        steps: ["check systems"], 
+        trigger: "Unknown malfunction" 
+      };
+      protocolStep = 0;
+      
+      // Show the Red Alert Visuals
+      document.getElementById('emergency-overlay').classList.remove('hidden');
+      
+      // Updated AI Message with "Human Support Needed"
+      addChatMessage(`🚨 ⚠️ CRITICAL: ${activeProtocol.trigger}. ${activeProtocol.name} initiated.`);
+      addChatMessage(`VAYUDOOT Error 404: Autonomy insufficient. **Human support urgently needed.**`);
+      addChatMessage(`Crew, please enter the override command: "${activeProtocol.steps[0]}"`);
+    }
+
+    function setSystemStatus(index, status) {
+      systemStatus[index] = status;
+      updateLastRecords(); // Update Main Panel immediately
+      // 1. Sync the crew stats immediately
+      syncCrewWithSystems();
+
+      const systemIds = ['sys-thruster', 'sys-life', 'sys-power'];
+      const dropdown = document.getElementById(systemIds[index]);
+
+      if (status === 'Little') {
+        // Show yellow alert and simulate a repair
+        showAlert("⚠️ MINOR MALFUNCTION - VAYUDOOT attempting auto-repair...", () => {
+          systemStatus[index] = "OK";
+          dropdown.value = "OK"; // Sync the SC dropdown back to OK
+          updateLastRecords();
+          addChatMessage(`🔧 VAYUDOOT: Fixed minor issue in ${systemIds[index].split('-')[1]}.`);
+        });
+      } 
+      else if (status === 'Extreme') {
+        const protocolType = (index === 1) ? "FIRE" : (index === 2) ? "POWER" : "THRUSTER";
+        triggerEmergency(protocolType);
+      }
+      // 3. The Reset: If user sets it back to OK, clear the emergency
+      else if (status === 'OK') {
+        // Check if ANY other system is still 'Extreme'
+        const stillDangerous = systemStatus.includes("Extreme");
+        
+        if (!stillDangerous) {
+          // Hide the red overlay
+          document.getElementById('emergency-overlay').classList.add('hidden');
+          activeProtocol = null;
+          addChatMessage("✅ System normalized. Emergency protocols deactivated. VAYUDOOT resuming standard monitoring.");
+        }
+      }
+    }
+
+    function updateLastRecords() {
+      const labels = ["Thruster Valves", "Life Support Software", "Power Supply Unit"];
+      const ids = ["record-thruster", "record-life", "record-power"];
+      
+      let html = "";
+      systemStatus.forEach((status, i) => {
+        let colorClass = "text-green-400";
+        if (status === "Little") colorClass = "text-yellow-400";
+        if (status === "Extreme") colorClass = "text-red-500 animate-pulse";
+        
+        html += `
+          <div class="flex justify-between bg-black/40 p-4 rounded-2xl border border-white/5">
+            <span class="text-gray-400 uppercase text-xs tracking-widest">${labels[i]}</span>
+            <span class="${colorClass} font-mono font-bold">${status}</span>
+          </div>`;
+      });
+      const recordsHTML = `
+        <div class="flex justify-between bg-black/40 p-4 rounded-2xl">
+          <span>Thruster Valves</span>
+          <span id="record-thruster" class="${systemStatus[0] === 'OK' ? 'text-green-400' : systemStatus[0] === 'Little' ? 'text-yellow-400' : 'text-red-400'}">${systemStatus[0]}</span>
+        </div>
+        <div class="flex justify-between bg-black/40 p-4 rounded-2xl">
+          <span>Life Support Software</span>
+          <span id="record-life" class="${systemStatus[1] === 'OK' ? 'text-green-400' : systemStatus[1] === 'Little' ? 'text-yellow-400' : 'text-red-400'}">${systemStatus[1]}</span>
+        </div>
+        <div class="flex justify-between bg-black/40 p-4 rounded-2xl">
+          <span>Power Supply Unit</span>
+          <span id="record-power" class="${systemStatus[2] === 'OK' ? 'text-green-400' : systemStatus[2] === 'Little' ? 'text-yellow-400' : 'text-red-400'}">${systemStatus[2]}</span>
+        </div>
+      `;
+      document.getElementById('last-checks').innerHTML = recordsHTML;
+    }
+
+    function showAlert(message, callback, isExtreme = false) {
+      const alertBox = document.createElement('div');
+      alertBox.style.cssText = 'position:fixed; top:30%; left:50%; transform:translate(-50%,-50%); background:#1f2937; border:3px solid #f59e0b; padding:30px 50px; border-radius:20px; color:white; font-size:22px; font-weight:bold; z-index:10001; text-align:center; box-shadow:0 0 30px #f59e0b;';
+      alertBox.innerHTML = message;
+      document.body.appendChild(alertBox);
+
+      const delay = isExtreme ? 3200 : 2000;
+      
+      setTimeout(() => {
+        if (isExtreme) {
+          alertBox.style.borderColor = '#ef4444';
+          alertBox.innerHTML += '<br><span class="text-red-400 text-xl">Support from Earth required</span>';
+        }
+        if (callback) callback();
+        setTimeout(() => alertBox.remove(), 1800);
+      }, delay);
+    }
+
+    function updateCrewStatus(index, status) {
+      const names = ["Capt. Vikram Singh", "Dr. Meera Patel"];
+      const name = names[index];
+      
+      // Show alert
+      showAlert(`🧑‍🚀 ${name} health changed to: ${status}`, null);
+      
+      // Optional: You can also update the Crew Data tab if open
+      if (!document.getElementById('screen-1').classList.contains('hidden')) {
+        renderCrewList(); // refresh crew list
+      }
+    }
+
+    // ==================== CREW, CHAT, TABS (unchanged from your original) ====================
+    const MEDICAL_PROTOCOLS = {
+      "Nominal": { action: "None", text: "Vitals stable. No intervention required." },
+      "Stressed": { action: "Administer Mild Sedative", text: "Elevated cortisol levels. Suggesting sedative administration." },
+      "Heat Stress": { action: "Cooling Fluid Injection", text: "Body temperature critical. Activating internal cooling loop." },
+      "Injured": { action: "Apply Bio-Gel", text: "Tissue damage detected. Suggesting localized Bio-Gel application." },
+      "Critical": { action: "Administer Adrenaline", text: "Systemic failure imminent. Adrenaline shot required." },
+      "Unconscious": { action: "Increase Oxygen Flow", text: "Hypoxia detected. Diverting O2 to crew quarters." }
+    };
+    const crewMembers = [
+      { id: 1, name: "Capt. Vikram Singh", role: "Commander", photo: "https://picsum.photos/id/1011/300/300", status: "Nominal", hr: 72, notes: "Calm and focused" },
+      { id: 2, name: "Dr. Meera Patel", role: "Medical Officer", photo: "https://picsum.photos/id/64/300/300", status: "Nominal", hr: 81, notes: "Slight fatigue detected" },
+      { id: 3, name: "Lt. Rohan Desai", role: "Systems Engineer", photo: "https://picsum.photos/id/201/300/300", status: "Nominal", hr: 68, notes: "Monitoring propulsion" },
+      { id: 4, name: "Dr. Anika Rao", role: "Astrobiologist", photo: "https://picsum.photos/id/1005/300/300", status: "Nominal", hr: 75, notes: "Excited about Mars samples" }
+    ];
+
+    function renderCrewList() {
+      const container = document.getElementById('crew-list');
+      container.innerHTML = '';
+      
+      crewMembers.forEach(member => {
+        const div = document.createElement('div');
+        div.className = "flex items-center gap-4 bg-black/60 hover:bg-cyan-900/30 p-4 rounded-3xl cursor-pointer border border-transparent hover:border-cyan-400 transition-all";
+        
+        // Dynamic Color Logic
+        let statusColor = "text-green-400";
+        if (member.status === "STRESSED") statusColor = "text-yellow-400";
+        if (member.status === "CRITICAL" || member.status === "HEAT STRESS") statusColor = "text-red-500 animate-pulse";
+
+        div.innerHTML = `
+          <img src="${member.photo}" class="w-12 h-12 rounded-2xl object-cover border border-cyan-500/30">
+          <div class="flex-1">
+            <div class="font-semibold text-white">${member.name}</div>
+            <div class="text-xs text-gray-400">${member.role}</div>
+          </div>
+          <div class="text-right">
+            <div class="${statusColor} text-xs sm:text-sm font-bold">${member.status}</div>
+            <div class="text-xs font-mono">${member.hr} BPM</div>
+          </div>
+        `;
+        
+        div.onclick = () => showCrewDetail(member);
+        container.appendChild(div);
+      });
+    }
+
+    let currentCrew = null;
+    function showCrewDetail(member) {
+      currentCrew = member;
+      const protocol = MEDICAL_PROTOCOLS[member.status] || { action: "Check Vitals", text: "Status unknown." };
+
+      document.getElementById('crew-detail').classList.remove('hidden');
+      document.getElementById('detail-name').textContent = member.name;
+      document.getElementById('detail-photo').src = member.photo;
+
+      document.getElementById('detail-info').innerHTML = `
+        <div class="space-y-3">
+          <div><span class="text-gray-400">Role:</span> ${member.role}</div>
+          <div><span class="text-gray-400">Heart Rate:</span> <span class="font-mono text-cyan-400">${member.hr} BPM</span></div>
+          <div class="p-3 bg-cyan-900/20 border border-cyan-400/30 rounded-xl">
+            <div class="text-[10px] text-cyan-400 uppercase font-bold mb-1">VAYUDOOT Recommendation</div>
+            <div class="text-xs sm:text-sm italic">"${protocol.text}"</div>
+          </div>
+        </div>
+      `;
+
+      // Update the button logic for treatment
+      const actionBtn = document.querySelector('#crew-detail div[onclick="updateCrewData()"]');
+      if (protocol.action !== "None") {
+        actionBtn.textContent = `EXECUTE: ${protocol.action}`;
+        actionBtn.onclick = () => administerTreatment(member, protocol.action);
+        actionBtn.classList.remove('hidden');
+      } else {
+        actionBtn.classList.add('hidden');
+      }
+    }
+    function administerTreatment(member, action) {
+      addChatMessage(`💉 VAYUDOOT: Administering ${action} to ${member.name}...`);
+      
+      // Show a "Processing" state
+      const actionBtn = document.querySelector('#crew-detail div[onclick^="administerTreatment"]');
+      actionBtn.textContent = "TREATMENT IN PROGRESS...";
+      actionBtn.classList.add('animate-pulse', 'pointer-events-none');
+
+      setTimeout(() => {
+        // 1. Update the Data
+        member.status = "Nominal";
+        member.hr = 72;
+        member.notes = `Recovered after ${action}.`;
+
+        // 2. Refresh UI
+        renderCrewList();
+        showCrewDetail(member);
+        
+        // 3. AI Feedback
+        addChatMessage(`✅ Success. ${member.name}'s vitals have stabilized.`);
+        showAlert(`✨ ${member.name} is now NOMINAL`);
+        
+        // 4. Reset Button
+        actionBtn.classList.remove('animate-pulse', 'pointer-events-none');
+      }, 3000); // 3-second medical delay
+    }
+    function hideCrewDetail() { document.getElementById('crew-detail').classList.add('hidden'); currentCrew = null; }
+    function updateCrewData() { if(!currentCrew) return; currentCrew.hr = Math.floor(65 + Math.random()*25); currentCrew.notes = "Data refreshed • VAYUDOOT confirmed stable"; showCrewDetail(currentCrew); }
+
+    function addChatMessage(text, isUser = false) {
+      const chat = document.getElementById('chat-window');
+      const msg = document.createElement('div');
+      msg.className = isUser ? "flex justify-end w-full" : "flex gap-3 max-w-[85%]";
+      
+      if(isUser) {
+        msg.innerHTML = `<div class="bg-cyan-500 text-black px-5 py-3 rounded-2xl rounded-tr-none shadow-lg">${text}</div>`;
+      } else {
+        msg.innerHTML = `
+          <div class="flex-shrink-0 w-8 h-8 bg-cyan-900/50 rounded-full flex items-center justify-center border border-cyan-400">
+            <i class="fas fa-robot text-xs text-cyan-400"></i>
+          </div>
+          <div class="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl rounded-tl-none text-cyan-50">${text}</div>`;
+      }
+      
+      chat.appendChild(msg);
+      
+      // Smooth scroll to bottom
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim().toLowerCase();
+      if(!text) return;
+
+      addChatMessage(input.value, true);
+      input.value = '';
+
+      setTimeout(() => {
+        // Check if we are in an Emergency Protocol
+        if (activeProtocol) {
+          if (text === activeProtocol.steps[protocolStep]) {
+            protocolStep++;
+            if (protocolStep < activeProtocol.steps.length) {
+              addChatMessage(`✅ Confirmed. Step ${protocolStep} complete. Now: "${activeProtocol.steps[protocolStep]}"`);
+            } else {
+              // Protocol Finished
+              addChatMessage(`✨ ${activeProtocol.name} COMPLETE. Systems stabilizing.`);
+              document.getElementById('emergency-overlay').classList.add('hidden');
+              activeProtocol = null;
+              // Reset systems to OK
+              systemStatus = ["OK", "OK", "OK"];
+              updateLastRecords();
+            }
+          } else {
+            addChatMessage(`❌ INVALID INPUT. In ${activeProtocol.name}, I require: "${activeProtocol.steps[protocolStep]}"`);
+          }
+          return;
+        }
+
+        // Enhanced Default Responses
+        if(text.includes("status")) {
+            addChatMessage("🛰️ Monitoring Gaganyaan-3. All systems operational. Efficiency at 99.8%. Crew vitals stable.");
+        } else if(text.includes("hello") || text.includes("hi") || text.includes("hey")) {
+            addChatMessage("👋 Greetings, crew member. VAYUDOOT AI is online and ready to assist with your mission to Mars.");
+        } else if(text.includes("crew") || text.includes("team")) {
+            addChatMessage("👨‍🚀 All 4 crew members are currently stable. Capt. Vikram Singh commanding, Dr. Meera Patel monitoring medical systems, Lt. Rohan Desai managing propulsion, and Dr. Anika Rao analyzing Mars sample data.");
+        } else if(text.includes("mars") || text.includes("destination")) {
+            addChatMessage("🔴 Mars destination confirmed. Current distance: " + Math.round(distanceToMars).toLocaleString() + " km. ETA: 7 months, 12 days at current velocity.");
+        } else if(text.includes("oxygen") || text.includes("o2") || text.includes("air")) {
+            addChatMessage("💨 O₂ levels at 98.7%. Life support systems functioning optimally. Air recycling efficiency at 99.2%.");
+        } else if(text.includes("temperature") || text.includes("temp") || text.includes("heat")) {
+            addChatMessage("🌡️ Core temperature stable at " + temp.toFixed(1) + "°C. Thermal regulation systems operating within normal parameters.");
+        } else if(text.includes("fuel") || text.includes("propellant") || text.includes("power")) {
+            addChatMessage("⚡ Fuel reserves at 67%. Solar panels operating at 94% efficiency. Battery backup systems fully charged.");
+        } else if(text.includes("communication") || text.includes("comms") || text.includes("contact")) {
+            addChatMessage("📡 Communication link with Earth established. Signal delay: 14 minutes 28 seconds. All channels operational.");
+        } else if(text.includes("emergency") || text.includes("danger") || text.includes("alert")) {
+            addChatMessage("⚠️ No active emergencies. All safety systems on standby. Emergency protocols ready if needed.");
+        } else if(text.includes("sleep") || text.includes("rest") || text.includes("schedule")) {
+            addChatMessage("😴 Crew sleep cycle optimized. 2 members currently on rest rotation. Next shift change in 3 hours 45 minutes.");
+        } else if(text.includes("food") || text.includes("water") || text.includes("supplies")) {
+            addChatMessage("🍽️ Food supplies sufficient for 482 days. Water recycling at 98% efficiency. Nutritional supplements available.");
+        } else if(text.includes("exercise") || text.includes("fitness") || text.includes("health")) {
+            addChatMessage("🏃‍♂️ Daily exercise regimen completed. Crew fitness levels at 92% of baseline. Muscle mass retention optimal.");
+        } else if(text.includes("research") || text.includes("experiment") || text.includes("science")) {
+            addChatMessage("🔬 12 experiments currently active. 3 completed successfully. Mars atmosphere sample analysis in progress.");
+        } else if(text.includes("navigation") || text.includes("course") || text.includes("trajectory")) {
+            addChatMessage("🧭 Course correction planned in 6 hours. Trajectory deviation: 0.002%. All navigation systems calibrated.");
+        } else if(text.includes("weather") || text.includes("solar") || text.includes("radiation")) {
+            addChatMessage("☀️ Solar activity moderate. Radiation shielding at 100% effectiveness. No solar flares detected in 72-hour forecast.");
+        } else if(text.includes("help") || text.includes("commands") || text.includes("assist")) {
+            addChatMessage("ℹ️ Available commands: status, crew, mars, oxygen, temperature, fuel, communication, emergency, sleep, food, exercise, research, navigation, weather. Type any keyword for detailed information.");
+        } else if(text.includes("who are you") || text.includes("what are you") || text.includes("vayudoot")) {
+            addChatMessage("🤖 I am VAYUDOOT AI, your advanced mission control system. I monitor all ship systems, crew health, and mission parameters to ensure safe passage to Mars.");
+        } else if(text.includes("mission") || text.includes("objective") || text.includes("goal")) {
+            addChatMessage("🎯 Mission Objective: Establish first human outpost on Mars. Deploy habitat modules, conduct geological surveys, and test terraforming technologies.");
+        } else {
+            const responses = [
+                "📝 Instruction logged in Mission Chronology.",
+                "✅ Command acknowledged. Processing request.",
+                "🔄 Updating mission parameters based on your input.",
+                "📊 Data recorded in ship's main computer.",
+                "🎯 Your command has been queued for execution."
+            ];
+            addChatMessage(responses[Math.floor(Math.random() * responses.length)]);
+        }
+      }, 800);
+    }
+
+    function switchTab(tabIndex) {
+      document.querySelectorAll('#screen-0, #screen-1, #screen-2').forEach(s => s.classList.add('hidden'));
+      document.getElementById('screen-'+tabIndex).classList.remove('hidden');
+      document.querySelectorAll('button[id^="tab-"]').forEach(b => b.classList.remove('tab-active'));
+      document.getElementById('tab-'+tabIndex).classList.add('tab-active');
+    }
+
+    window.addEventListener('resize', () => {
+      const container = document.getElementById('three-container');
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    function startMissionTimer() {
+      let seconds = 0;
+      setInterval(() => {
+        seconds++;
+        const h = String(Math.floor(seconds/3600)).padStart(2,'0');
+        const m = String(Math.floor((seconds%3600)/60)).padStart(2,'0');
+        const s = String(seconds%60).padStart(2,'0');
+        document.getElementById('mission-time').textContent = `${h}:${m}:${s}`;
+      }, 1000);
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    function switchMobileTab(index) {
+      switchTab(index);
+      document.getElementById('mobile-menu').classList.add('hidden');
+    }
+
+    function init() {
+      initThree();
+      startMissionTimer();
+      updateMainMonitoring();
+      setInterval(updateMainMonitoring, 2500);
+      const dates = getDynamicDates();
+      document.getElementById('last-updated-crew').textContent = dates.crew;
+      renderCrewList();
+      setTimeout(() => addChatMessage("Hello crew. VAYUDOOT is online and monitoring your journey to Mars."), 1800);
+      console.log('%c✅ AetherX - VAYUDOOT AI READY!', 'color:#00ffc8; font-size:20px; font-weight:bold');
+    }
+
+    window.onload = init;
+  </script>
+  <div id="emergency-overlay" class="hidden fixed inset-0 bg-red-900/20 backdrop-blur-sm z-[10002] pointer-events-none border-[20px] border-red-600/50 animate-pulse">
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+      <h2 class="text-6xl font-black text-red-500 drop-shadow-2xl">CRITICAL SYSTEM FAILURE</h2>
+      <p class="text-xl text-white mt-4 font-mono tracking-tighter">VAYUDOOT AI: EMERGENCY PROTOCOL ACTIVE</p>
+    </div>
+  </div>
+</body>
+</html>
